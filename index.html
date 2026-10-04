@@ -373,27 +373,27 @@
                     <i class="fa-solid fa-lock"></i>
                 </div>
                 <h3 class="text-xl font-bold text-white">ចូលប្រើប្រាស់គណនី</h3>
-                <p class="text-xs text-gray-400 mt-1">សម្រាប់ម្ចាស់ Website (Admin/Owner Demo)</p>
+                <p class="text-xs text-gray-400 mt-1">សម្រាប់តែម្ចាស់ Website ប៉ុណ្ណោះ</p>
             </div>
 
-            <!-- Demo Credentials Hint Box -->
+            <!-- Admin Credentials Hint Box -->
             <div class="bg-gray-800/80 border border-gray-700 rounded-lg p-3 mb-5 text-xs text-gray-300">
                 <div class="font-bold text-yellow-400 mb-1 flex items-center gap-1">
-                    <i class="fa-solid fa-key"></i> ព័ត៌មាន Login សាកល្បង (Demo):
+                    <i class="fa-solid fa-key"></i> ព័ត៌មាន Login របស់ម្ចាស់គេហទំព័រ៖
                 </div>
-                <p class="font-mono text-gray-200">Email: <span class="text-white bg-black/50 px-1.5 py-0.5 rounded select-all">demo@gmail.com</span></p>
-                <p class="font-mono text-gray-200 mt-1">Password: <span class="text-white bg-black/50 px-1.5 py-0.5 rounded select-all">password123</span></p>
+                <p class="font-mono text-gray-200">Gmail: <span class="text-white bg-black/50 px-1.5 py-0.5 rounded select-all">nndruok@gmail.com</span></p>
+                <p class="font-mono text-gray-200 mt-1">Password: <span class="text-white bg-black/50 px-1.5 py-0.5 rounded select-all">Try.2008.18.Y</span></p>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-300 mb-1">អាសយដ្ឋាន អ៊ីមែល (Email)</label>
-                    <input type="email" id="loginEmail" required value="demo@gmail.com" class="w-full bg-black/60 border border-gray-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-brand-red">
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">អាសយដ្ឋាន អ៊ីមែល (Gmail)</label>
+                    <input type="email" id="loginEmail" required value="nndruok@gmail.com" class="w-full bg-black/60 border border-gray-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-brand-red">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-300 mb-1">ពាក្យសម្ងាត់ (Password)</label>
-                    <input type="password" id="loginPassword" required value="password123" class="w-full bg-black/60 border border-gray-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-brand-red">
+                    <input type="password" id="loginPassword" required value="Try.2008.18.Y" class="w-full bg-black/60 border border-gray-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-brand-red">
                 </div>
 
                 <button type="submit" class="w-full bg-brand-red hover:bg-red-700 text-white font-bold py-3 rounded-lg transition text-sm shadow-lg shadow-brand-red/30">
@@ -509,16 +509,16 @@
         // Handle User Login
         function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPassword').value;
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPassword').value.trim();
 
-            // Demo Admin Credentials
-            if (email === 'demo@gmail.com' && pass === 'password123') {
+            // Owner Admin Credentials
+            if (email === 'nndruok@gmail.com' && pass === 'Try.2008.18.Y') {
                 isLoggedIn = true;
                 localStorage.setItem('khmer_stream_auth', 'true');
                 updateAuthUI();
                 closeLoginModal();
-                showToast('ចូលប្រើប្រាស់ដោយជោគជ័យ! សូមស្វាគមន៍ Admin', 'success');
+                showToast('ចូលប្រើប្រាស់ដោយជោគជ័យ! សូមស្វាគមន៍ម្ចាស់គេហទំព័រ', 'success');
             } else {
                 showToast('អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ!', 'error');
             }
@@ -543,7 +543,7 @@
                 authContainer.innerHTML = `
                     <div class="flex items-center gap-2">
                         <span class="hidden md:inline text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full border border-yellow-500/30">
-                            <i class="fa-solid fa-crown text-yellow-500"></i> Admin Mode
+                            <i class="fa-solid fa-crown text-yellow-500"></i> Owner Mode
                         </span>
                         <button onclick="handleLogout()" class="bg-gray-800 hover:bg-gray-700 text-white text-xs md:text-sm px-3.5 py-1.5 rounded-md transition flex items-center gap-1.5">
                             <i class="fa-solid fa-right-from-bracket"></i>
